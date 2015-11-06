@@ -7712,15 +7712,15 @@
     {
       "type": "Feature",
       "properties": {
-        "ID": 0,
+        "ID": 100,
         "TITLE": "Braclaw",
         "SCALE": 200000,
-        "SHEET": "4749",
-        "N43": null,
-        "N80": null,
+        "SHEET": 4749,
+        "N43": "null",
+        "N80": "null",
         "N245A": "Braclaw",
-        "N651": null,
-        "POZNAMKA": null
+        "N651": "null",
+        "POZNAMKA": "null"
       },
       "geometry": {
         "type": "Polygon",
