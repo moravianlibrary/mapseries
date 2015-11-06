@@ -1,0 +1,188 @@
+FMT   L MP
+LDR   L -----nem-a22--------4500
+007   L aj|ca|||
+008   L  ||||s{
+    "id": "year",
+    "width": 5,
+    "title": "Rok vydání"
+  }||||{
+    "base": "corporation",
+    "width": 2,
+    "title": "Kód místa vydání",
+    "valuesByBaseIndex": ["au", "xr"]
+  }||||||||z|||||||||{
+    "base":"corporation",
+    "width":3,
+    "title":"Jazyk",
+    "valuesByBaseIndex": ["ger", "cze"]
+  }-d
+0341  L $$b200000{
+    "title": "Zeměpisné souřadnice",
+    "enabled": false,
+    "width": 60,
+    "value": {
+      "formatFunction": "ms:marc21_0341_bbox"
+    }
+  }
+0410  L $$a{
+    "id":"langcode",
+    "width":3,
+    "title":"Kód jazyka",
+    "values": ["cze", "ger", "hun"]
+  }$$a{
+    "id":"langcode2",
+    "width":3,
+    "title":"Kód jazyka",
+    "values": ["cze", "ger", "hun"]
+  }
+043   L {
+    "title": "Pole 043",
+    "enabled": false,
+    "width": 40,
+    "value": {
+      "attr": "43"
+    }
+  }
+072 7 L $$a623$$xVojenská technika$$2Konspekt$$97
+072 7 L $$a912$$xMapy. Atlasy. Glóby$$2Konspekt$$97
+080   L $$a623.64$$2MRF
+080   L {
+    "title": "Pole 080",
+    "enabled": false,
+    "multipleValues": true,
+    "valueSeparator": "\n080   L ",
+    "value": {
+      "attr": "80"
+    }
+  }
+080   L $$a(084.3)528.42 $$2MRF
+080   L $$a(084.3)355/359 $$2MRF
+110{
+    "base":"corporation",
+    "width": 1,
+    "title": "Identifikátor",
+    "valuesByBaseIndex": ["1", "2"]
+  }  L $$a{
+    "id":"corporation",
+    "width":52,
+    "title":"Vydavatelská korporace",
+    "values": [
+      "Rakousko-Uhersko.$$bMilitärgeographisches Institut",
+      "Vojenský zeměpisný ústav"]
+  }$$4ctg$$4pbl$$7{
+    "base":"corporation",
+    "width": 13,
+    "title": "Kód autority",
+    "valuesByBaseIndex": ["ko20060405003", "ko2005263855"]
+  }
+24510 L $$a{
+    "title": "Název listu",
+    "value": {
+      "attr": "245a"
+    }
+  }.$$p{
+    "id":"sheet",
+    "title": "Označení listu",
+    "width": 10,
+    "values": [
+      {"attr":"SHEET"},
+      {"attr":"SHEET", "formatFunction":"addDegrees"}
+    ]
+  }$$h[kartografický dokument] /$$c{
+    "base":"corporation",
+    "width": 60,
+    "title": "Údaj o odpovědnosti",
+    "valuesByBaseIndex": [
+      "Militärgeographisches Institut",
+      "[Militärgeographisches Institut] ; Vojenský zeměpisný ústav"
+    ]
+  }
+2463  L $$a{
+    "base":"sheet",
+    "title": "Variantní název",
+    "valuesByBaseIndex": [
+      {"formatFunction":"addDegrees"},
+      {"attr":"SHEET"}
+    ]
+  }
+24630 L $$a{
+    "base": "sheet",
+    "title": "Název části"
+  }
+250   L $$a{
+    "id":"poradi_vydani",
+    "width":5,
+    "title":"Číslo vydání"
+  }
+255   L $$aMěřítko 1:200 000{
+    "title": "Zeměpisné souřadnice",
+    "enabled": false,
+    "width": 70,
+    "value": {
+      "formatFunction":"ms:marc21_255_bbox_czech"
+    }
+  }
+260   L $$a{
+    "base":"corporation",
+    "width": 40,
+    "title": "Místo vydání a vydavatel",
+    "valuesByBaseIndex": [
+      "Wien :$$bMilitärgeographisches Institut,",
+      "Praha :$$bVojenský zeměpisný ústav,"
+    ]
+  }$$c{
+    "base":"year"
+  }
+300   L $$a1 mapa :$$bbarev. ;$$c 55 x 37 cm, na listu {
+  "id": "height",
+  "title": "Výška",
+  "width": 2
+} x {
+  "id": "width",
+  "title": "Šířka",
+  "width": 2
+} cm
+4901  L $$a[Die Franzisco-Josephinische Landesaufnahme] ; $$v{
+    "base":"sheet",
+    "title": "Označení svazku/pořadí",
+    "valuesByBaseIndex": [
+      {},
+      {"attr":"SHEET"}
+    ]
+  }, {
+    "base":"year",
+    "title": "Označení svazku/pořadí"
+  }
+650 7 L $$avojenská topografie$$7ph316247$$2czenas
+651 7 L {
+    "title": "Název oblasti a kód autority",
+    "enabled": false,
+    "multipleValues": true,
+    "width": 60,
+    "valueSeparator": "\n651 7 L ",
+    "value": {
+      "attr": "651"
+    }
+  }
+655 7 L $$atopografická mapová díla$$7fd688544
+655 7 L $$avojenské mapy$$7fd133817
+{
+  "base":"corporation",
+  "title": "Bibliografický předchůdce",
+  "width": 100,
+  "valuesByBaseIndex": [
+    "",
+    "7101  L $$aRakousko-Uhersko.$$bMilitärgeographisches Institut$$4ant$$7kn20060405003"
+  ]
+}
+830 0 L $$aTřetí vojenské mapování 1:200 000 ;$$v{
+    "base":"sheet",
+    "title": "Označení svazku/pořadí",
+    "valuesByBaseIndex": [
+      {},
+      {"attr":"SHEET"}
+    ]
+  }, {
+    "base":"year",
+    "title": "Označení svazku/pořadí"
+  }
