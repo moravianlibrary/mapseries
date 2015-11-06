@@ -8942,15 +8942,15 @@
     {
       "type": "Feature",
       "properties": {
-        "ID": 0,
+        "ID": "300",
         "TITLE": "Pinsk",
-        "SCALE": 200000,
+        "SCALE": "200000",
         "SHEET": "4452",
-        "N43": null,
-        "N80": null,
+        "N43": "null",
+        "N80": "null",
         "N245A": "Pinsk",
-        "N651": null,
-        "POZNAMKA": null
+        "N651": "null",
+        "POZNAMKA": "null"
       },
       "geometry": {
         "type": "Polygon",
