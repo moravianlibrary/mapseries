@@ -4227,15 +4227,15 @@
     {
       "type": "Feature",
       "properties": {
-        "ID": 0,
+        "ID": 100,
         "TITLE": "Rogaczew",
         "SCALE": 200000,
-        "SHEET": "4853",
-        "N43": null,
-        "N80": null,
+        "SHEET": 4853,
+        "N43": "null",
+        "N80": "null",
         "N245A": "Rogaczew",
-        "N651": null,
-        "POZNAMKA": null
+        "N651": "null",
+        "POZNAMKA": "null"
       },
       "geometry": {
         "type": "Polygon",
