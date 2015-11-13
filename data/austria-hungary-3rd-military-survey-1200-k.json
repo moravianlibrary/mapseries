@@ -5293,15 +5293,15 @@
     {
       "type": "Feature",
       "properties": {
-        "ID": 0,
+        "ID": 5555,
         "TITLE": "Rom",
         "SCALE": 200000,
-        "SHEET": "3042",
-        "N43": null,
-        "N80": null,
+        "SHEET": 3042,
+        "N43": "null",
+        "N80": "null",
         "N245A": "Rom",
-        "N651": null,
-        "POZNAMKA": null
+        "N651": "null",
+        "POZNAMKA": "null"
       },
       "geometry": {
         "type": "Polygon",
