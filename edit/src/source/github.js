@@ -70,6 +70,12 @@ module.exports = function(context, config) {
 
       var repo = getUpstream();
       repo.fork()
+      .then((forked_repo) => {
+        var new_reponame = forked_repo.data['name']
+        var github = getGitHub();
+        var origin = github.getRepo(context.storage.get('github_username'), new_reponame);
+        return origin.updateRepository({name : 'mapseries-data'})
+      })
       .catch((err) => {
         window.clearInterval(timer);
         reject(err);
