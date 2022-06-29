@@ -68,7 +68,7 @@ public class SheetBuilder {
         
         String digitalLibraryUrl = getDigitalLibraryUrl();
 
-        sheet.setThumbnailUrl(getThumbnailUrl(digitalLibraryUrl)));
+        sheet.setThumbnailUrl(getThumbnailUrl(digitalLibraryUrl));
         
         sheet.setDigitalLibraryUrl(digitalLibraryUrl);
         sheet.setVufindUrl(getVufindUrl());
