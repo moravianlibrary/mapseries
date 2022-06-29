@@ -5,6 +5,8 @@ class Grid
     @mainSeries = null
     @seriess = null
 
-  getShortTitle: -> @title.substr(@title.indexOf(':') + 1)
+  getTitle: -> @title
+
+  getShortTitle: -> @title.split(';')[2].trim()
 
 export default Grid
