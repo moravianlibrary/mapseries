@@ -20,10 +20,19 @@ module.exports = function(context) {
     var areas = new Set();
     var config = getConfig();
     config.series.forEach(function(serie) {
-      var area = serie.title.split(':', 1)[0].trim();
+      var area = serie.title.split(';', 1)[0].trim();
       areas.add(area);
     });
     return areas;
+  }
+
+  function getGrids() {
+    var grids = new Set();
+    var config = getConfig();
+    config.series.forEach(function(serie) {
+      var grid = serie.title.split(';', 2)[1];
+      console.log(grid);
+    })
   }
 
   function getConfig() {
@@ -65,17 +74,24 @@ module.exports = function(context) {
     var series = {};
     var config = getConfig();
     config.series.forEach(function(serie, i, arr) {
-      var tmp = serie.title.split(':');
+      var tmp = serie.title.split(';');
       var area = tmp.splice(0, 1);
-      var title = tmp.join(':');
-      series[area] = series[area] || [];
-      series[area].push({
+      var grid = tmp.splice(0, 1);
+      var title = tmp.splice(0, 1);
+      area[0] = area[0].trim();
+      grid[0] = grid[0].trim();
+      title[0] = title[0].trim();
+      series[area] = series[area] || {};
+      series[area][grid] = series[area][grid] || [];
+      series[area][grid].push({
         id: i,
         title: title,
+        grid: grid,
         layer: serie.layer,
         template: serie.template,
         formatFunctions: serie.formatFunctions
       });
+      
     });
     return series;
   }
@@ -83,21 +99,29 @@ module.exports = function(context) {
   function getJsTreeData() {
     var seriesTree = [];
     var data = getGroupedByArea();
+    var tmp = [];
     for (var area in data) {
-      var series = data[area];
-      series.forEach(function(serie, i, arr) {
-        arr[i] = {
-          id: serie.id,
-          text: serie.title,
-          icon: 'jstree-file',
-          layer: serie.layer,
-          template: serie.template,
-          formatFunctions: serie.formatFunctions
-        };
-      });
+      var grids = data[area];
+      for (var grid in grids) {
+        grids[grid].forEach(function(serie, i, arr) {
+          arr[i] = {
+            id: serie.id,
+            text: serie.title,
+            icon: 'jstree-file',
+            grid: serie.grid,
+            layer: serie.layer,
+            template: serie.template,
+            formatFunctions: serie.formatFunctions
+          };
+        });
+        tmp.push({
+          text: grid,
+          children: grids[grid]
+        });
+      }
       seriesTree.push({
         text: area,
-        children: series
+        children: tmp
       });
     }
     return seriesTree;

@@ -255,6 +255,11 @@ class Search
           })
     )
 
+  ###*
+  # Method for updating html region selection
+  #   the method updates selection list of id 'regionSelect' and sets it
+  # @param {object} Number to operate on
+  ###
   updateRegions: (regions) ->
     select = $('#regionSelect')
     select.off()
@@ -268,6 +273,11 @@ class Search
 
     select.on 'change', => @setRegion(select.val())
 
+  ###*
+  # Method for setting region
+  #   method is called after changing selection of id 'regionSelect'
+  # @param {object} Region which was selected
+  ###
   setRegion: (region) ->
     seriess = null
     if region
@@ -279,41 +289,64 @@ class Search
     grids = Series.getGrids(seriess)
     @updateGrids(grids, region)
 
+  ###*
+  # Method setting grids based on hrml grid selection
+  #   method updates grids based on selected region of id 'gridSelect'
+  # @param {object} Grids based on region
+  ###
   updateGrids: (grids, region) ->
     select = $('#gridSelect')
     select.off()
     select.empty()
 
     grids.forEach (grid) ->
-      visTitle = if region then grid.getShortTitle() else grid.title
       select.append $('<option>', {
-        'value': grid.title
-        'text': visTitle
+        'value': grid
+        'text': grid
       })
 
-    value = if region then grids.values().next().value.title else ''
-    select.on 'change', () =>
-      gridTitle = select.val()
-      grid = null
-      grids.forEach (g) -> if g.title == gridTitle then grid = g
-      regSelect = $('#regionSelect')
-      region = regSelect.val()
-      @setGrid(grid, region)
+    select.on 'change', () => 
+      # Možný budoucí bug?
+      @setGrid(select.val(), region)
 
-    select.val(value)
     select.trigger('change')
 
+  ###*
+  # Method setting grids based on grid value selection
+  #   method updates grids based on selected region of id 'regionSelect'
+  # @param {object} Grids based on region
+  ###
   setGrid: (grid, region) ->
+    seriess = null
+
+    if grid
+      seriess = (serie for serie in @seriess when serie.title.split(';')[1].trim().startsWith(grid))
+    else
+      seriess = @series
+    
+    @updateSeriess(region, grid)
+  
+  updateSeriess: (region, grid) ->
+    select = $('#seriesSelect')
+    select.off()
+    select.empty()
     i = 0
     zip = (x) -> { val: x, index: i++ }
-
     seriess = (zip(x) for x in @seriess)
 
     if grid or region
       seriess = seriess.filter (series) ->
-        (!grid || series.val.grid == grid) && (!region || series.val.title.startsWith(region))
-
-    @updateSeriess(seriess, region)
+        (!grid || series.val.title.split(";")[1].trim() == grid) && 
+        (!region || series.val.title.split(";")[0].trim() == region)
+    seriess.forEach (serie) ->
+      select.append $('<option>', {
+        'value': serie.index,
+        'text': serie.val.title.split(";")[2].trim()
+      })
+    select.on 'change', () => 
+      @setSeries(@seriess[select.val()])
+    select.val(seriess[0].index)
+    select.trigger('change')
 
   setSeries: (series) ->
     @setActiveSheet(null)
@@ -328,12 +361,16 @@ class Search
         loading.hide()
 
         labels = []
+        x_array = []
+        y_array = []
 
         geojson.features.forEach (feature) ->
           centroid = turf.centroid(feature)
           centroid.properties = feature.properties
           centroid.properties['__GEOMETRY'] = feature.geometry;
           labels.push(centroid)
+          x_array.push(centroid.geometry.coordinates[0])
+          y_array.push(centroid.geometry.coordinates[1])
 
         @map.getSource("serie-source").setData(geojson)
 
@@ -341,6 +378,23 @@ class Search
           "type": "FeatureCollection",
           "features": labels
         })
+
+         # fly to center
+        # calculate z axis based on length of y
+        x_max = Math.max(...x_array)
+        x_min = Math.min(...x_array)
+        y_max = Math.max(...y_array)
+        y_min = Math.min(...y_array)
+        @map.flyTo(
+          {
+            center: [
+              (x_max + x_min)/2,
+              (y_max + y_min)/2
+            ],
+            zoom: 4,
+            essential: true
+          }
+        )
 
       error: (err) ->
         loading.hide()
@@ -381,23 +435,26 @@ class Search
         "features": [sheet]
       })
 
+      # fly to center
+      geometry = JSON.parse(centroid.properties.__GEOMETRY)
+      # calculate z based on y length
+      y_array = geometry.coordinates[0].map((value, index) -> return value[1])
+      y_max = Math.max(...y_array)
+      y_min = Math.min(...y_array)
+      dy = y_max - y_min
+      z = 7.5 - dy
+      @map.flyTo(
+        {
+          center: [
+            centroid.geometry.coordinates[0],
+            centroid.geometry.coordinates[1] - (12.11 - 1.534*z)
+          ],
+          zoom: z,
+          essential: true
+        }
+      )
+
       @template.showSheet(sheet, @series, @map)
 
-
-  updateSeriess: (seriess, region) ->
-    select = $('#seriesSelect')
-    select.off()
-    select.empty()
-
-    seriess.forEach (series) ->
-      visTitle = if region then series.val.getShortTitle() else series.val.title
-      select.append $('<option>', {
-        value: series.index
-        text: visTitle
-      })
-
-    select.on 'change', () => @setSeries(@seriess[select.val()])
-    select.val(seriess[0].index)
-    select.trigger('change')
 
 export default Search
