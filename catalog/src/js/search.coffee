@@ -385,14 +385,11 @@ class Search
         x_min = Math.min(...x_array)
         y_max = Math.max(...y_array)
         y_min = Math.min(...y_array)
-        @map.flyTo(
+        bbox = [[x_min, y_min], [x_max, y_max]]
+        @map.fitBounds(
+          bbox, 
           {
-            center: [
-              (x_max + x_min)/2,
-              (y_max + y_min)/2
-            ],
-            zoom: 4,
-            essential: true
+            padding: {top: 80, bottom: 80, left:80, right: 400}
           }
         )
 
@@ -425,7 +422,6 @@ class Search
     else
       centroid = turf.centroid(sheet)
       centroid.properties = sheet.properties
-
       @map.getSource("serie-source-labels-marked").setData({
         "type": "FeatureCollection",
         "features": [centroid]
@@ -434,27 +430,61 @@ class Search
         "type": "FeatureCollection",
         "features": [sheet]
       })
-
       # fly to center
       geometry = JSON.parse(centroid.properties.__GEOMETRY)
-      # calculate z based on y length
       y_array = geometry.coordinates[0].map((value, index) -> return value[1])
       y_max = Math.max(...y_array)
       y_min = Math.min(...y_array)
       dy = y_max - y_min
       z = 7.5 - dy
-      @map.flyTo(
+      bbox = [geometry.coordinates[0][1], geometry.coordinates[0][3]]
+      @map.fitBounds(
+          bbox,
+          {
+            padding: {top: 80, bottom: 900, left:80, right: 80}
+          }
+        )
+      ###
+      @map.easeTo(
         {
           center: [
             centroid.geometry.coordinates[0],
-            centroid.geometry.coordinates[1] - (12.11 - 1.534*z)
+            centroid.geometry.coordinates[1]   
           ],
+          zoom: z,
+        }
+      )
+      
+      currentCenterPixel = @map.project(@map.getCenter());
+      currentCenterPixel.y += $('.template-dialog').height() + 80
+      newCenter = @map.unproject(currentCenterPixel)
+      
+      @map.flyTo(
+        {
+          center: newCenter,
           zoom: z,
           essential: true
         }
       )
-
+      ###
       @template.showSheet(sheet, @series, @map)
+      offset =  $('.template-dialog').height() + 80
+      x_array = []
+      y_array = []
+      geometry.coordinates[0].forEach (coord, index) ->
+        x_array.push(coord[0])
+        y_array.push(coord[1])
+      x_max = Math.max(...x_array)
+      x_min = Math.min(...x_array)
+      y_max = Math.max(...y_array)
+      y_min = Math.min(...y_array)
+      bbox = [[x_min, y_min], [x_max, y_max]]
+      @map.fitBounds(
+        bbox,
+        {
+          padding: {top: 80, bottom: offset, left:80, right: 80}
+        }
+      )
 
 
 export default Search
