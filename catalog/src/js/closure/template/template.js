@@ -108,6 +108,7 @@ ms.Template.prototype.getTextToCopyAll_ = function() {
   var node;
   for (var i = 0; i < pre.childNodes.length; i++) {
     node = pre.childNodes[i];
+    console.log(node);
     switch (node.nodeType) {
       case goog.dom.NodeType.TEXT:
         textToCopy += node.nodeValue;
@@ -119,6 +120,8 @@ ms.Template.prototype.getTextToCopyAll_ = function() {
           });
           textToCopy += field.getValue();
         } else if (goog.dom.classlist.contains(node, 'multipleValues')) {
+          textToCopy += goog.dom.getRawTextContent(node);
+        } else if (goog.dom.classlist.contains(node, 'year-text')) {
           textToCopy += goog.dom.getRawTextContent(node);
         }
         break;
@@ -144,8 +147,7 @@ ms.Template.prototype.getTextToCopyField008_ = function() {
  * @param {OpenLayers.Map} map map.
  * @private
  */
-ms.Template.prototype.createHtmlAndComboBoxes_ =
-    function(template, series, map) {
+ms.Template.prototype.createHtmlAndComboBoxes_ = function(template, series, map, q = false) {
   this.fields = [];
   var _this = this;
 
@@ -158,7 +160,7 @@ ms.Template.prototype.createHtmlAndComboBoxes_ =
       return _this.createComboBox_(json, series, map);
     }
   });
-
+  
   //create referring combo boxes
   html = this.replaceEveryJson_(html, function(json, str) {
     return _this.createComboBox_(json, series, map);
@@ -204,6 +206,7 @@ ms.Template.prototype.createComboBox_ = function(json, series, map) {
   var cb = new ms.ComboBox();
   cb.configurate(json, series, map);
   cb.base = base || null;
+
   this.fields.push(cb);
 
   var cls = ['combo'];
@@ -213,12 +216,15 @@ ms.Template.prototype.createComboBox_ = function(json, series, map) {
   cls = cls.join(' ');
   var divAttrs = {
     'id': 'templateComboBox' + (this.fields.length - 1),
-    'class': cls
+    'class': cls,
   };
   var w = json['width'];
   if (w) {
     w = w * 8 + 16;
     divAttrs['style'] = 'width:' + w + 'px;';
+  }
+  if (cb.configObj['base'] == 'year2') {
+    divAttrs['style'] += 'visibility: hidden;';
   }
   var title = json['title'];
   if (title) {
@@ -240,7 +246,7 @@ ms.Template.prototype.createComboBox_ = function(json, series, map) {
  */
 ms.Template.prototype.initComboBoxes_ = function(sheet, series, map) {
   var divs = goog.dom.getElementsByTagNameAndClass('div', 'combo',
-      this.getContentElement());
+    this.getContentElement());
   goog.array.forEach(divs, function(div) {
     var idx = parseInt(div.id.substr(16), 10);
     var cb = this.fields[idx];
@@ -267,11 +273,69 @@ ms.Template.prototype.initComboBoxes_ = function(sheet, series, map) {
     //synchronize values within group
     if (cb.id) {
       goog.events.listen(cb, 'change', function(evt) {
+        //if template contains typ_data field, add more combobox
+        if(cb.id == 'typ_data') {
+          if(cb.getValue() != 'q') {
+            document.querySelectorAll('.year-text').forEach(e => e.remove());
+            goog.array.forEach(divs, function(div) {
+              var idx = parseInt(div.id.substr(16), 10);
+              var cb = this.fields[idx];
+              if(cb.id == "year2") {
+                cb.setValue("----");
+                cb.setEnabled(false);
+              } else if (cb.configObj.base == "year2") {
+                cb.getElement().style.visibility = "hidden";
+              }
+            }, this);
+          } else {
+            goog.array.forEach(divs, function(div) {
+              var idx = parseInt(div.id.substr(16), 10);
+              var cb = this.fields[idx];
+              if(cb.id == "year2") {
+                cb.setValue("");
+                cb.setEnabled(true);
+              } else if (cb.configObj.base == "year") {
+                cb.getElement().style.visibility = "visible";
+                var div = goog.dom.getParentElement(cb.getElement());
+                var p = document.createElement('p');
+                p.classList.add("year-text");
+                p.style.display = "inline";
+                if (cb.configObj.title.startsWith("Rok")) {
+                  var p_bracket = document.createElement('p');
+                  p_bracket.classList.add("year-text");
+                  p_bracket.style.display = "inline";
+                  p_bracket.textContent = "[mezi ";
+                  goog.dom.insertSiblingBefore(p_bracket, div);
+                  p.textContent = " a ";
+                } else if (cb.configObj.title.startsWith("Ozna")) {
+                  p.textContent = "exi-";
+                } else {
+                  p.textContent = "";
+                }
+                goog.dom.insertSiblingAfter(p, div);
+              } else if (cb.configObj.base == "year2") {
+                cb.getElement().style.visibility = "visible";
+                var div = goog.dom.getParentElement(cb.getElement());
+                var p_bracket = document.createElement('p');
+                if (cb.configObj.title.startsWith("Rok")) {
+                  p_bracket.classList.add("year-text");
+                  p_bracket.style.display = "inline";
+                  p_bracket.textContent = "?]";
+                  goog.dom.insertSiblingAfter(p_bracket, div);
+                }
+              }
+            }, this);
+          }
+        }
         var cbs = this.getDependent_(cb);
         goog.array.forEach(cbs, function(groupMember) {
           var memberInput = groupMember.getInputElement();
           if (groupMember !== cb) {
-            memberInput.value = groupMember.formatValue(cb.getValue(), sheet);
+            if(cb.getValue() != "----") {
+              memberInput.value = groupMember.formatValue(cb.getValue(), sheet);
+            } else {
+              memberInput.value = groupMember.formatValue("", sheet);
+            }
           }
         }, this);
       }, false, this);
@@ -480,7 +544,6 @@ ms.Template.prototype.replaceEveryJson_ = function(template, f) {
     }
     closeBracket = cb;
   }
-
   for (i = replacements.length - 1; i >= 0; i--) {
     var repl = replacements[i];
 
