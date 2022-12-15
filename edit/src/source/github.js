@@ -252,7 +252,6 @@ module.exports = function(context, config) {
   }
 
   function readFile(path, treeSha) {
-    log.debug('Calling readFile()')
 
     var repo = getOrigin(),
         paths = null;
@@ -267,8 +266,7 @@ module.exports = function(context, config) {
       let p = paths[0];
 
       if (!treeSha) {
-
-        return repo.getRef('heads/' + workBranch)
+        return repo.getRef('heads/master')
         .then((sha) => {
 
           return getTreeSha(sha.data.object.sha, p)
