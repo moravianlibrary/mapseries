@@ -30,9 +30,11 @@ module.exports = function(context) {
     var grids = new Set();
     var config = getConfig();
     config.series.forEach(function(serie) {
-      var grid = serie.title.split(';', 2)[1];
+      var grid = serie.title.split(';', 2)[1].trim();
       console.log(grid);
+      grids.add(grid)
     })
+    return grids;
   }
 
   function getConfig() {
@@ -54,9 +56,10 @@ module.exports = function(context) {
     context.data.set({config: prefix + serializer(data), dirty: dirty}, 'config');
   }
 
-  function createSerie(title, area) {
-    var serieTitle = area + ': ' + title;
-    var layer = S(serieTitle).slugify().s;
+  function createSerie(title, area, grid) {
+    var serieTitle = area + '; ' + grid + '; ' + title;
+    var layerTitle = area + '; ' + title;  
+    var layer = S(layerTitle).slugify().s;
     var template = layer + '.txt';
 
     var config = getConfig();
@@ -75,12 +78,9 @@ module.exports = function(context) {
     var config = getConfig();
     config.series.forEach(function(serie, i, arr) {
       var tmp = serie.title.split(';');
-      var area = tmp.splice(0, 1);
-      var grid = tmp.splice(0, 1);
-      var title = tmp.splice(0, 1);
-      area[0] = area[0].trim();
-      grid[0] = grid[0].trim();
-      title[0] = title[0].trim();
+      var area = tmp[0].trim(); // Area
+      var grid = tmp[1].trim(); // Grid
+      var title = tmp[2].trim(); // Serie title
       series[area] = series[area] || {};
       series[area][grid] = series[area][grid] || [];
       series[area][grid].push({
@@ -91,7 +91,6 @@ module.exports = function(context) {
         template: serie.template,
         formatFunctions: serie.formatFunctions
       });
-      
     });
     return series;
   }
@@ -123,6 +122,7 @@ module.exports = function(context) {
         text: area,
         children: tmp
       });
+      tmp = [];
     }
     return seriesTree;
   }
@@ -190,6 +190,7 @@ module.exports = function(context) {
   return {
     loadConfig: loadConfig,
     getAreas: getAreas,
+    getGrids: getGrids,
     createSerie: createSerie,
     getJsTreeData: getJsTreeData,
     markEdited: markEdited,

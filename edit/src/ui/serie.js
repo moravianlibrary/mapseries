@@ -6,8 +6,8 @@ module.exports = function(context) {
       config = require('../lib/config')(context),
       meta = require('../lib/meta.js');
 
-  function newOne(title, area) {
-    config.createSerie(title, area);
+  function newOne(title, area, grid) {
+    config.createSerie(title, area, grid);
     meta.clear(context);
 
     github.readFile('template/template.txt')
