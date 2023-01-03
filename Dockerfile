@@ -9,11 +9,11 @@ RUN rm -rf /scripts /configs
 
 ENV LANG en_US.utf8
 
-COPY catalog /build/catalog
-COPY edit /build/edit
-COPY index /build/index
+COPY --chown=jboss:jboss catalog /build/catalog
+COPY --chown=jboss:jboss edit /build/edit
+COPY --chown=jboss:jboss index /build/index
 
-RUN chown -R jboss:jboss /build
+RUN chown jboss:jboss /build
 USER jboss
 
 RUN /build/catalog/docker.sh && \

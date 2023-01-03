@@ -16,7 +16,7 @@ import languages from 'languages'
  * @constructor
  * @extends {goog.ui.Dialog}
  */
-ms.Template = function() {
+ms.Template = function () {
   goog.ui.Dialog.call(this, 'template-dialog');
 
   this.setDraggable(false);
@@ -30,7 +30,7 @@ ms.Template = function() {
 };
 goog.inherits(ms.Template, goog.ui.Dialog);
 
-ms.Template.prototype.createDom = function() {
+ms.Template.prototype.createDom = function () {
   ms.Template.base(this, 'createDom');
 
   var dom = this.getDomHelper();
@@ -39,50 +39,50 @@ ms.Template.prototype.createDom = function() {
     this.titleEl_,
     this.titleTextEl_ = dom.createDom(
       goog.dom.TagName.DIV, {
-        'className': goog.getCssName(this.class_, 'title-text'),
-        'id': this.getId()
-      },
+      'className': goog.getCssName(this.class_, 'title-text'),
+      'id': this.getId()
+    },
       this.title_),
     dom.createDom(
       goog.dom.TagName.DIV, {
-        'className': goog.getCssName(this.class_, 'title-static-content'),
-        'data-text-ref': 'sheet-detail'
-      }
+      'className': goog.getCssName(this.class_, 'title-static-content'),
+      'data-text-ref': 'sheet-detail'
+    }
     )
   );
   var closeIcon = dom.createDom(
     goog.dom.TagName.I, {
-      'className': 'fas fa-times'
-    }
+    'className': 'fas fa-times'
+  }
   );
   var closeText = dom.createDom(
     goog.dom.TagName.SPAN, {
-      'data-text-ref': 'close'
-    }
+    'data-text-ref': 'close'
+  }
   );
   goog.dom.append(
     this.getElement(),
     this.closeBtnEl_ = dom.createDom(
       goog.dom.TagName.A, {
-        'className': 'close-btn',
-        'href': '#'
-      },
+      'className': 'close-btn',
+      'href': '#'
+    },
       closeIcon, closeText
     )
   );
 };
 
-ms.Template.prototype.enterDocument = function() {
+ms.Template.prototype.enterDocument = function () {
   ms.Template.base(this, 'enterDocument');
 
   this.getHandler().listen(
     this.closeBtnEl_, goog.events.EventType.CLICK, this.onTitleCloseClick_);
 }
 
-ms.Template.prototype.setTitle = function(title) {
+ms.Template.prototype.setTitle = function (title) {
   this.title_ = title;
-    if (this.titleTextEl_) {
-      goog.dom.safe.setInnerHtml(this.titleTextEl_, title);
+  if (this.titleTextEl_) {
+    goog.dom.safe.setInnerHtml(this.titleTextEl_, title);
   }
 };
 
@@ -90,32 +90,32 @@ ms.Template.prototype.setTitle = function(title) {
  * Add listeners to dialog with decorated template content.
  * @private
  */
-ms.Template.prototype.addTemplateListeners_ = function() {
+ms.Template.prototype.addTemplateListeners_ = function () {
   this.initClipboardHandler_();
 };
 
-ms.Template.prototype.initClipboardHandler_ = function() {
+ms.Template.prototype.initClipboardHandler_ = function () {
   let clipboard = Clipboard.getInstance();
   clipboard.deregisterButtons();
   clipboard.registerButton('clipboard_button', goog.bind(this.getTextToCopyAll_, this));
   clipboard.registerButton('clipboard_button_008', goog.bind(this.getTextToCopyField008_, this));
+  clipboard.registerButton('clipboard_button_arl', goog.bind(this.getTextToCopyArl_, this));
 }
 
-ms.Template.prototype.getTextToCopyAll_ = function() {
+ms.Template.prototype.getTextToCopyAll_ = function () {
   var container = this.getContentElement();
   var pre = goog.dom.getElementsByTagNameAndClass('pre', null, container)[0];
   var textToCopy = '';
   var node;
   for (var i = 0; i < pre.childNodes.length; i++) {
     node = pre.childNodes[i];
-    console.log(node);
     switch (node.nodeType) {
       case goog.dom.NodeType.TEXT:
         textToCopy += node.nodeValue;
         break;
       case goog.dom.NodeType.ELEMENT:
         if (goog.dom.classlist.contains(node, 'combo')) {
-          var field = goog.array.find(this.fields, function(field) {
+          var field = goog.array.find(this.fields, function (field) {
             return node === field.getElement().parentNode;
           });
           textToCopy += field.getValue();
@@ -130,7 +130,48 @@ ms.Template.prototype.getTextToCopyAll_ = function() {
   return textToCopy;
 };
 
-ms.Template.prototype.getTextToCopyField008_ = function() {
+ms.Template.prototype.getTextToCopyArl_ = function () {
+  var container = this.getContentElement();
+  var pre = goog.dom.getElementsByTagNameAndClass('pre', null, container)[0];
+  var textToCopy = '';
+  var node;
+  for (var i = 0; i < pre.childNodes.length; i++) {
+    node = pre.childNodes[i];
+    switch (node.nodeType) {
+      case goog.dom.NodeType.TEXT:
+        var res = node.nodeValue.match(/^FMT.*$/gm);
+        if (goog.isArray(res) && res.length) {
+          var lines = node.nodeValue.split('\n');
+          lines.splice(0, 1);
+          textToCopy += lines.join('\n');
+        } else {
+          textToCopy += node.nodeValue;
+        }
+        break;
+      case goog.dom.NodeType.ELEMENT:
+        if (goog.dom.classlist.contains(node, 'combo')) {
+          var field = goog.array.find(this.fields, function (field) {
+            return node === field.getElement().parentNode;
+          });
+          textToCopy += field.getValue();
+        } else if (goog.dom.classlist.contains(node, 'multipleValues')) {
+          textToCopy += goog.dom.getRawTextContent(node);
+        } else if (goog.dom.classlist.contains(node, 'year-text')) {
+          textToCopy += goog.dom.getRawTextContent(node);
+        }
+        break;
+    }
+  }
+  //add space after three char in every line
+  textToCopy = textToCopy.replace(/^(.{3})(\d+)/gm, "$1 $2");
+  //Remove singular letter word L
+  textToCopy = textToCopy.replace(/(^| )L( |$)/gm, " ");
+  //Replace LDR with 000
+  textToCopy = textToCopy.replace(/^LDR/g, "000");
+  return textToCopy;
+};
+
+ms.Template.prototype.getTextToCopyField008_ = function () {
   var line008 = '';
   var allText = this.getTextToCopyAll_();
   var res = allText.match(/^008.*$/gm);
@@ -147,12 +188,12 @@ ms.Template.prototype.getTextToCopyField008_ = function() {
  * @param {OpenLayers.Map} map map.
  * @private
  */
-ms.Template.prototype.createHtmlAndComboBoxes_ = function(template, series, map, q = false) {
+ms.Template.prototype.createHtmlAndComboBoxes_ = function (template, series, map, q = false) {
   this.fields = [];
   var _this = this;
 
   //create BASE combo boxes
-  var html = this.replaceEveryJson_(template, function(json, str) {
+  var html = this.replaceEveryJson_(template, function (json, str) {
     var baseId = json['base'];
     if (baseId) {
       return str;
@@ -160,24 +201,62 @@ ms.Template.prototype.createHtmlAndComboBoxes_ = function(template, series, map,
       return _this.createComboBox_(json, series, map);
     }
   });
-  
+
   //create referring combo boxes
-  html = this.replaceEveryJson_(html, function(json, str) {
+  html = this.replaceEveryJson_(html, function (json, str) {
     return _this.createComboBox_(json, series, map);
   });
 
   html = '<pre>' + html + '</pre>';
 
-  html += '<div class="clipboard-container">'
-  html += '<a href="#" id="clipboard_button" data-text-ref="copy-to-clipboard"></a>'
-  html += '<span> / </span>'
-  html += '<a href="#" id="clipboard_button_008" data-text-ref="copy-to-clipboard-008"></a>'
-  html += '</div>'
+  if (localStorage.getItem("templateFormat") === null) {
+    localStorage.setItem("templateFormat", "aleph");
+  }
 
+  var templateFormat = localStorage.getItem("templateFormat");
+  html += '<div class="clipboard-container">';
+  html += '<select id="formatSelect" class="custom-select white black-bg" style="display:inline; margin-right:15px;">';
+  if (templateFormat == "aleph") {
+    html += '<option value="aleph" selected>Aleph</option>';
+    html += '<option value="arl">ARL</option>';
+    html += '</select>';
+    html += '<a href="#" id="clipboard_button" data-text-ref="copy-to-clipboard"></a>';
+    html += '<span id="button_separator" style="white"> / </span>';
+    html += '<a href="#" id="clipboard_button_008" data-text-ref="copy-to-clipboard-008"></a>';
+    html += '<a href="#" id="clipboard_button_arl" data-text-ref="copy-to-clipboard-arl" style="display:none"></a>';
+  } else if (templateFormat == "arl") {
+    html += '<option value="aleph">Aleph</option>';
+    html += '<option value="arl" selected>ARL</option>';
+    html += '</select>';
+    html += '<a href="#" id="clipboard_button" data-text-ref="copy-to-clipboard" style="display:none"></a>';
+    html += '<span id="button_separator" class="white" style="display:none"> / </span>';
+    html += '<a href="#" id="clipboard_button_008" data-text-ref="copy-to-clipboard-008" style="display:none"></a>';
+    html += '<a href="#" id="clipboard_button_arl" data-text-ref="copy-to-clipboard-arl"></a>';
+  }
+  html += '</div>';
   this.setSafeHtmlContent(goog.html.legacyconversions.safeHtmlFromString(html));
 
+  $('.clipboard-container').ready(function () {
+    $('#formatSelect').on('change', function () {
+      localStorage.setItem("templateFormat", this.value);
+      if (this.value == "arl") {
+        $('#clipboard_button').hide();
+        $('#clipboard_button_008').hide();
+        $('#clipboard_button_arl').show();
+        $('#button_separator').hide();
+      } else if (this.value == 'aleph') {
+        $('#clipboard_button').show();
+        $('#clipboard_button_008').show();
+        $('#clipboard_button_arl').hide();
+        $('#button_separator').show();
+      }
+    });
+  });
 };
 
+$(document).ready(function () {
+  $('.coding2').hide();
+});
 
 /**
  * Create ComboBoxes.
@@ -187,15 +266,15 @@ ms.Template.prototype.createHtmlAndComboBoxes_ = function(template, series, map,
  * @return {string} combobox HTML.
  * @private
  */
-ms.Template.prototype.createComboBox_ = function(json, series, map) {
+ms.Template.prototype.createComboBox_ = function (json, series, map) {
   var baseId = json['base'];
 
   if (baseId) {
-    var base = goog.array.find(this.fields, function(cb) {
+    var base = goog.array.find(this.fields, function (cb) {
       return cb.id === baseId;
     });
     if (base) {
-      goog.object.forEach(base.configObj, function(val, key) {
+      goog.object.forEach(base.configObj, function (val, key) {
         if (key != 'id') {
           goog.object.setIfUndefined(json, key, val);
         }
@@ -244,10 +323,10 @@ ms.Template.prototype.createComboBox_ = function(json, series, map) {
  * functions.
  * @private
  */
-ms.Template.prototype.initComboBoxes_ = function(sheet, series, map) {
+ms.Template.prototype.initComboBoxes_ = function (sheet, series, map) {
   var divs = goog.dom.getElementsByTagNameAndClass('div', 'combo',
     this.getContentElement());
-  goog.array.forEach(divs, function(div) {
+  goog.array.forEach(divs, function (div) {
     var idx = parseInt(div.id.substr(16), 10);
     var cb = this.fields[idx];
 
@@ -272,15 +351,15 @@ ms.Template.prototype.initComboBoxes_ = function(sheet, series, map) {
 
     //synchronize values within group
     if (cb.id) {
-      goog.events.listen(cb, 'change', function(evt) {
+      goog.events.listen(cb, 'change', function (evt) {
         //if template contains typ_data field, add more combobox
-        if(cb.id == 'typ_data') {
-          if(cb.getValue() != 'q') {
+        if (cb.id == 'typ_data') {
+          if (cb.getValue() != 'q') {
             document.querySelectorAll('.year-text').forEach(e => e.remove());
-            goog.array.forEach(divs, function(div) {
+            goog.array.forEach(divs, function (div) {
               var idx = parseInt(div.id.substr(16), 10);
               var cb = this.fields[idx];
-              if(cb.id == "year2") {
+              if (cb.id == "year2") {
                 cb.setValue("----");
                 cb.setEnabled(false);
               } else if (cb.configObj.base == "year2") {
@@ -288,10 +367,10 @@ ms.Template.prototype.initComboBoxes_ = function(sheet, series, map) {
               }
             }, this);
           } else {
-            goog.array.forEach(divs, function(div) {
+            goog.array.forEach(divs, function (div) {
               var idx = parseInt(div.id.substr(16), 10);
               var cb = this.fields[idx];
-              if(cb.id == "year2") {
+              if (cb.id == "year2") {
                 cb.setValue("");
                 cb.setEnabled(true);
               } else if (cb.configObj.base == "year") {
@@ -308,7 +387,7 @@ ms.Template.prototype.initComboBoxes_ = function(sheet, series, map) {
                   goog.dom.insertSiblingBefore(p_bracket, div);
                   p.textContent = " a ";
                 } else if (cb.configObj.title.startsWith("Ozna")) {
-                  p.textContent = "exi-";
+                  p.textContent = "-";
                 } else {
                   p.textContent = "";
                 }
@@ -328,10 +407,10 @@ ms.Template.prototype.initComboBoxes_ = function(sheet, series, map) {
           }
         }
         var cbs = this.getDependent_(cb);
-        goog.array.forEach(cbs, function(groupMember) {
+        goog.array.forEach(cbs, function (groupMember) {
           var memberInput = groupMember.getInputElement();
           if (groupMember !== cb) {
-            if(cb.getValue() != "----") {
+            if (cb.getValue() != "----") {
               memberInput.value = groupMember.formatValue(cb.getValue(), sheet);
             } else {
               memberInput.value = groupMember.formatValue("", sheet);
@@ -345,18 +424,18 @@ ms.Template.prototype.initComboBoxes_ = function(sheet, series, map) {
     if (cb.base || cb.configObj['enabled'] === false) {
       cb.setEnabled(false);
     } else {
-      goog.events.listen(cb.getInputElement(), 'focus', function(evt) {
+      goog.events.listen(cb.getInputElement(), 'focus', function (evt) {
         var cbs = this.getDependent_(cb);
         cbs.push(cb);
-        goog.array.forEach(cbs, function(depCombo) {
+        goog.array.forEach(cbs, function (depCombo) {
           var el = depCombo.getElement();
           goog.dom.classlist.add(el, 'active');
         });
       }, false, this);
-      goog.events.listen(cb.getInputElement(), 'blur', function(evt) {
+      goog.events.listen(cb.getInputElement(), 'blur', function (evt) {
         var cbs = this.getDependent_(cb);
         cbs.push(cb);
-        goog.array.forEach(cbs, function(depCombo) {
+        goog.array.forEach(cbs, function (depCombo) {
           var el = depCombo.getElement();
           goog.dom.classlist.remove(el, 'active');
         });
@@ -368,7 +447,7 @@ ms.Template.prototype.initComboBoxes_ = function(sheet, series, map) {
 
 
   // fill every field
-  goog.array.forEach(this.fields, function(cb) {
+  goog.array.forEach(this.fields, function (cb) {
 
     if (cb.getItemCount() == 1) {
       cb.removeItemAt(0);
@@ -393,7 +472,7 @@ ms.Template.prototype.initComboBoxes_ = function(sheet, series, map) {
  * @param {OpenLayers.Feature.Vector} sheet sheet.
  * @private
  */
-ms.Template.prototype.addOptions_ = function(cb, sheet) {
+ms.Template.prototype.addOptions_ = function (cb, sheet) {
   if (!cb.base && (cb.values || cb.value)) {
     var values = cb.values || [cb.value];
 
@@ -403,9 +482,9 @@ ms.Template.prototype.addOptions_ = function(cb, sheet) {
     if (cb.multipleValues) {
       var otherMultipleStringValues = [];
     }
-    goog.array.forEach(values, function(valueItem) {
+    goog.array.forEach(values, function (valueItem) {
       var stringValues = cb.formatValue(valueItem, sheet);
-      goog.array.forEach(stringValues, function(stringValue) {
+      goog.array.forEach(stringValues, function (stringValue) {
         if (cb.multipleValues && count) {
           otherMultipleStringValues.push(stringValue);
         } else {
@@ -424,7 +503,7 @@ ms.Template.prototype.addOptions_ = function(cb, sheet) {
     if (cb.multipleValues && otherMultipleStringValues.length) {
       var cbdiv = goog.dom.getParentElement(cb.getElement());
       var content = '';
-      goog.array.forEach(otherMultipleStringValues, function(stringValue) {
+      goog.array.forEach(otherMultipleStringValues, function (stringValue) {
         content += cb.valueSeparator + stringValue;
       });
       var span = goog.dom.createDom('span', {
@@ -443,7 +522,7 @@ ms.Template.prototype.addOptions_ = function(cb, sheet) {
  * @param {ms.Series} series series.
  * @param {OpenLayers.Map} map map.
  */
-ms.Template.prototype.showSheet = function(sheet, series, map) {
+ms.Template.prototype.showSheet = function (sheet, series, map) {
   var template = series.template;
   if (!template) {
     return;
@@ -474,8 +553,8 @@ ms.Template.prototype.showSheet = function(sheet, series, map) {
  * @private
  *
  */
-ms.Template.prototype.getDependent_ = function(mainCb) {
-  return goog.array.filter(this.fields, function(cb) {
+ms.Template.prototype.getDependent_ = function (mainCb) {
+  return goog.array.filter(this.fields, function (cb) {
     return cb.base === mainCb;
   });
 };
@@ -489,7 +568,7 @@ ms.Template.prototype.getDependent_ = function(mainCb) {
  * @return {string} edited template.
  * @private
  */
-ms.Template.prototype.replaceEveryJson_ = function(template, f) {
+ms.Template.prototype.replaceEveryJson_ = function (template, f) {
   var openBrackets = [];
   var idx;
   while ((idx = template.indexOf('{', idx ? idx + 1 : 0)) >= 0) {
@@ -504,15 +583,15 @@ ms.Template.prototype.replaceEveryJson_ = function(template, f) {
     return template;
   }
 
-  var findIndexOfNextOpenBracket = function(closebr) {
-    var result = goog.array.find(openBrackets, function(openbr) {
+  var findIndexOfNextOpenBracket = function (closebr) {
+    var result = goog.array.find(openBrackets, function (openbr) {
       return openbr > closebr;
     });
     result = result ? goog.array.indexOf(openBrackets, result) : -1;
     return result;
   };
-  var findIndexOfNextCloseBracket = function(openbr) {
-    var result = goog.array.find(closeBrackets, function(closebr) {
+  var findIndexOfNextCloseBracket = function (openbr) {
+    var result = goog.array.find(closeBrackets, function (closebr) {
       return closebr > openbr;
     });
     result = result ? goog.array.indexOf(closeBrackets, result) : -1;
@@ -548,7 +627,7 @@ ms.Template.prototype.replaceEveryJson_ = function(template, f) {
     var repl = replacements[i];
 
     template = template.substr(0, repl[0]) +
-        repl[2] + template.substr(repl[1]);
+      repl[2] + template.substr(repl[1]);
   }
   return template;
 };
@@ -559,7 +638,7 @@ ms.Template.prototype.replaceEveryJson_ = function(template, f) {
  * @inheritDoc
  * @suppress {accessControls}
  */
-ms.Template.prototype.onKey_ = function(e) {
+ms.Template.prototype.onKey_ = function (e) {
   var close = false;
   var hasHandler = false;
   var buttonSet = this.getButtonSet();
@@ -573,20 +652,20 @@ ms.Template.prototype.onKey_ = function(e) {
 
       // Users may expect to hit escape on a SELECT element.
       var isSpecialFormElement =
-          target.tagName == 'SELECT' && !target.disabled;
+        target.tagName == 'SELECT' && !target.disabled;
 
       if (cancel && !isSpecialFormElement) {
         hasHandler = true;
 
         var caption = buttonSet.get(cancel);
         close = this.dispatchEvent(
-            new goog.ui.Dialog.Event(cancel,
+          new goog.ui.Dialog.Event(cancel,
                 /** @type {Element|null|string} */(caption)));
       } else if (!isSpecialFormElement) {
         close = true;
       }
     } else if (e.keyCode == goog.events.KeyCodes.TAB && e.shiftKey &&
-        target == this.getElement()) {
+      target == this.getElement()) {
       // Prevent the user from shift-tabbing backwards out of the dialog box.
       // Instead, set up a wrap in focus backward to the end of the dialog.
       this.setupBackwardTabWrap();
@@ -607,8 +686,8 @@ ms.Template.prototype.onKey_ = function(e) {
 
       // Users may expect to hit enter on a TEXTAREA, SELECT or an A element.
       var isSpecialFormElement =
-          (target.tagName == 'TEXTAREA' || target.tagName == 'SELECT' ||
-           target.tagName == 'A') && !target.disabled;
+        (target.tagName == 'TEXTAREA' || target.tagName == 'SELECT' ||
+          target.tagName == 'A') && !target.disabled;
 
       if (defaultButton && !defaultButton.disabled && !isSpecialFormElement) {
         key = defaultKey;
@@ -617,7 +696,7 @@ ms.Template.prototype.onKey_ = function(e) {
     if (key && buttonSet) {
       hasHandler = true;
       close = this.dispatchEvent(
-          new goog.ui.Dialog.Event(key, String(buttonSet.get(key))));
+        new goog.ui.Dialog.Event(key, String(buttonSet.get(key))));
     }
     var enter = close;
   }
