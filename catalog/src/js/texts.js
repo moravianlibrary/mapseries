@@ -55,6 +55,10 @@ export default {
     "cs": "Zkopírovat pole 008 do schránky",
     "en": "Copy 008 to clipboard"
   },
+  "copy-to-clipboard-arl": {
+    "cs": "Zkopírovat do schránky ve formátu ARL",
+    "en": "Copy ARL to clipboard"
+  },
   "mapseries-online": {
     "cs": "Map Series: Mapová díla online",
     "en": "Map Series: Online"
